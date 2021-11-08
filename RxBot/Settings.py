@@ -5,7 +5,6 @@ import argparse
 try:
     import xlrd
     import xlsxwriter
-    from system_hotkey import SystemHotkey, SystemRegisterError
 except ImportError as e:
     print(e)
     raise ImportError(">>> One or more required packages are not properly installed! Run INSTALL_REQUIREMENTS.bat to fix!")
@@ -30,8 +29,9 @@ defaultSettings = [
     ("TRIGGER MESSAGE", "", "The message from another bot that will trigger this bot's main function.,"),
     ("TRIGGER USER", "CreatisBot", "Only this user can send the TRIGGER MESSAGE and trigger the bot."),
     ("FILL COLOR", "red", "Fill color of the bar, either in #fffffff format or the name of the color."),
-    ("DURATION", "120", "The amount of time in seconds the Rip and Tear meter is active. Remember to adjust difficulty and drain rate accordingly."),
-    ("DRAIN RATE", "3", "The bar will slowly go down every X amount of seconds if nobody says kill."),
+    ("BAR DURATION", "30", "The amount of time in seconds the Rip and Tear meter is active. Remember to adjust difficulty and drain rate accordingly."),
+    ("RIP AND TEAR DURATION", "60", "The amount of time in seconds Rip and Tear is active after the bar fills. After this time is up it will revert back to the normal scene."),
+    ("DRAIN RATE", "4", "The bar will slowly go down every X amount of seconds if nobody says kill."),
     ("DIFFICULTY", "10", "Raise this value to make the bar harder to increase, lower it to make it easier."),
 ]
 

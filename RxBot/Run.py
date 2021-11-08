@@ -72,8 +72,12 @@ def runcommand(command, cmdArguments, user, mute):
 
 
 def watchChat():  # Thread to handle twitch/IRC input
-    s = chatConnection.openSocket()
-    chatConnection.joinRoom(s)
+    try:
+        s = chatConnection.openSocket()
+        chatConnection.joinRoom(s)
+    except ConnectionResetError:
+        s = chatConnection.openSocket()
+        chatConnection.joinRoom(s)
     readbuffer = ""
     while True:
         readbuffer = readbuffer + s.recv(1024).decode("utf-8")

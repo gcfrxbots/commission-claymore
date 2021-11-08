@@ -22,6 +22,8 @@ class CustomCommands():
         self.deleteBar()
         self.killvalue = 2
         self.triggerMsg = settings["TRIGGER MESSAGE"]
+        self.RaTstartTime = None
+        self.RaTendTime = None
 
     def drawBar(self):
 
@@ -52,10 +54,11 @@ class CustomCommands():
         if user != settings["TRIGGER USER"]:
             return
         self.startTime = datetime.datetime.now()
-        self.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["DURATION"])
+        self.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
         self.isActive = True
         self.progress = 0
         self.drawBar()
+        os.system("RunHotkey_BarScene.exe")
         chatConnection.sendMessage("Rip and Tear mode is active! Spam Kill in chat to make me kill!")
 
     def stopRipandtear(self):
@@ -64,6 +67,7 @@ class CustomCommands():
         self.endTime = None
         self.progress = 0
         self.deleteBar()
+        os.system("RunHotkey_NormalScene.exe")
         chatConnection.sendMessage("Rip and Tear is now over, please stop saying Kill in chat.")
 
     def kill(self):
@@ -83,7 +87,9 @@ class CustomCommands():
         self.isActive = False
         self.startTime = None
         self.endTime = None
-        os.system("RunHotkey.exe")
+        os.system("RunHotkey_RipAndTearScene.exe")
         time.sleep(5)
         self.progress = 0
         self.deleteBar()
+        self.RaTstartTime = datetime.datetime.now()
+        self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
