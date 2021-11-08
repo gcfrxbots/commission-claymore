@@ -63,7 +63,8 @@ class coreFunctions:
 
         for item in mods:
             moderators.append(item)
-
+        print(data)
+        print(moderators)
         return moderators
 
     def getAllUsers(self):

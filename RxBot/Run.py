@@ -72,11 +72,11 @@ def runcommand(command, cmdArguments, user, mute):
 
 
 def watchChat():  # Thread to handle twitch/IRC input
+    s = chatConnection.openSocket()
     try:
-        s = chatConnection.openSocket()
         chatConnection.joinRoom(s)
     except ConnectionResetError:
-        s = chatConnection.openSocket()
+        time.sleep(1)
         chatConnection.joinRoom(s)
     readbuffer = ""
     while True:
@@ -134,6 +134,9 @@ def tick():
 
             if customcmds.endTime < datetime.datetime.now():
                 customcmds.stopRipandtear()
+
+            if customcmds.RaTendTime < datetime.datetime.now():
+                customcmds.returnToNormal()
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 
 
 commands_CustomCommands = {
-    "!ripandteartest": ('MOD', 'customcmds.startRipandtear', 'cmdArguments', 'user'),
+    "!ripandteartest": ('customcmds.startRipandtear', 'cmdArguments', 'user'),
 }
 
 
@@ -51,7 +51,7 @@ class CustomCommands():
     def startRipandtear(self, args, user):
         if self.isActive:
             return
-        if user != settings["TRIGGER USER"]:
+        if (user != settings["TRIGGER USER"]) and (user != settings["CHANNEL"]):
             return
         self.startTime = datetime.datetime.now()
         self.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
@@ -93,3 +93,6 @@ class CustomCommands():
         self.deleteBar()
         self.RaTstartTime = datetime.datetime.now()
         self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
+
+    def returnToNormal(self):
+        os.system("RunHotkey_NormalScene.exe")
