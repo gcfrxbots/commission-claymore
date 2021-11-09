@@ -21,7 +21,7 @@ GenSettings = (vars(parser.parse_args())["GenSettings"])
 '''FORMAT ---->   ("Option", "Default", "This is a description"), '''
 
 defaultSettings = [
-    ("PORT", 80, "Try 6667 if this doesn't work. Use 443 or 6697 for SSL. Don't touch otherwise."),
+    ("PORT", 6667, "Try 80 if this doesn't work. Use 443 or 6697 for SSL. Don't touch otherwise."),
     ("BOT OAUTH", "", "To get this oauth code, head here and log in with YOUR BOT'S account: https://twitchapps.com/tmi/"),
     ("BOT NAME", "", "Your bot's Twitch username, all lowercase."),
     ("CHANNEL", "", "Your Twitch username, all lowercase."),

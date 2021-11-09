@@ -121,7 +121,7 @@ def tick():
     cachedProgress = 0
     drain = 0
     while True:
-        time.sleep(0.25)
+        time.sleep(0.1)
         if customcmds.isActive:
 
             customcmds.drawBar()
@@ -135,6 +135,7 @@ def tick():
             if customcmds.endTime < datetime.datetime.now():
                 customcmds.stopRipandtear()
 
+        if customcmds.RaTisActive:
             if customcmds.RaTendTime < datetime.datetime.now():
                 customcmds.returnToNormal()
 

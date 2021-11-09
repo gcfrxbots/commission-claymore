@@ -24,6 +24,7 @@ class CustomCommands():
         self.triggerMsg = settings["TRIGGER MESSAGE"]
         self.RaTstartTime = None
         self.RaTendTime = None
+        self.RaTisActive = False
 
     def drawBar(self):
 
@@ -71,15 +72,16 @@ class CustomCommands():
         chatConnection.sendMessage("Rip and Tear is now over, please stop saying Kill in chat.")
 
     def kill(self):
-        users = len(core.getAllUsers())
-        difficulty = settings["DIFFICULTY"]
+        if self.isActive:
+            users = len(core.getAllUsers())
+            difficulty = settings["DIFFICULTY"]
 
-        self.killvalue = 500 / ((users)*(difficulty*.8))
-        self.progress += self.killvalue
-        print(self.progress)
+            self.killvalue = 500 / ((users)*(difficulty*.8))
+            self.progress += self.killvalue
+            print(self.progress)
 
-        if self.progress >= 500:
-            self.win()
+            if self.progress >= 500:
+                self.win()
 
 
     def win(self):
@@ -91,8 +93,11 @@ class CustomCommands():
         time.sleep(5)
         self.progress = 0
         self.deleteBar()
+        self.RaTisActive = True
         self.RaTstartTime = datetime.datetime.now()
         self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
 
     def returnToNormal(self):
         os.system("RunHotkey_NormalScene.exe")
+        self.RaTisActive = False
+        print("RaT DONE!")
