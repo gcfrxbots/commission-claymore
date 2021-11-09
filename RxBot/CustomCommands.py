@@ -80,8 +80,6 @@ class CustomCommands():
             self.progress += self.killvalue
             print(self.progress)
 
-            if self.progress >= 500:
-                self.win()
 
 
     def win(self):
@@ -89,10 +87,9 @@ class CustomCommands():
         self.isActive = False
         self.startTime = None
         self.endTime = None
-        os.system("RunHotkey_RipAndTearScene.exe")
-        time.sleep(5)
-        self.progress = 0
         self.deleteBar()
+        os.system("RunHotkey_RipAndTearScene.exe")
+        self.progress = 0
         self.RaTisActive = True
         self.RaTstartTime = datetime.datetime.now()
         self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])

@@ -98,8 +98,9 @@ def watchChat():  # Thread to handle twitch/IRC input
                     runcommand(command, cmdArguments, user, False)
                 if "kill" in command:
                     customcmds.kill()
-                if customcmds.triggerMsg in message:
-                    customcmds.startRipandtear(None, user)
+                if customcmds.triggerMsg.strip():
+                    if customcmds.triggerMsg in message:
+                        customcmds.startRipandtear(None, user)
 
 
 def console():  # Thread to handle console input
@@ -127,13 +128,16 @@ def tick():
             customcmds.drawBar()
 
             drain += 1
-            if drain > (customcmds.drainrate * 4):
+            if drain > (customcmds.drainrate * 8):
                 drain = 0
-                if customcmds.progress > 0:
-                    customcmds.progress -= customcmds.killvalue
+                if 500 > customcmds.progress > 0:
+                    customcmds.progress -= 10
 
             if customcmds.endTime < datetime.datetime.now():
-                customcmds.stopRipandtear()
+                if customcmds.progress >= 500:
+                    customcmds.win()
+                else:
+                    customcmds.stopRipandtear()
 
         if customcmds.RaTisActive:
             if customcmds.RaTendTime < datetime.datetime.now():
