@@ -2,7 +2,10 @@ from Settings import *
 from Initialize import *
 # importing image object from PIL
 import math
+import sys
+import ctypes
 import datetime
+import subprocess
 from PIL import Image, ImageDraw
 
 
@@ -59,7 +62,7 @@ class CustomCommands():
         self.isActive = True
         self.progress = 0
         self.drawBar()
-        os.system("RunHotkey_BarScene.exe")
+        subprocess.call([r"RunHotkey_BarScene.exe"])
         chatConnection.sendMessage("Rip and Tear mode is active! Spam Kill in chat to make me kill!")
 
     def stopRipandtear(self):
@@ -68,7 +71,7 @@ class CustomCommands():
         self.endTime = None
         self.progress = 0
         self.deleteBar()
-        os.system("RunHotkey_NormalScene.exe")
+        subprocess.call([r"RunHotkey_NormalScene.exe"])
         chatConnection.sendMessage("Rip and Tear is now over, please stop saying Kill in chat.")
 
     def kill(self):
@@ -88,13 +91,13 @@ class CustomCommands():
         self.startTime = None
         self.endTime = None
         self.deleteBar()
-        os.system("RunHotkey_RipAndTearScene.exe")
+        subprocess.call([r"RunHotkey_RipAndTearScene.exe"])
         self.progress = 0
         self.RaTisActive = True
         self.RaTstartTime = datetime.datetime.now()
         self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
 
     def returnToNormal(self):
-        os.system("RunHotkey_NormalScene.exe")
+        subprocess.call([r"RunHotkey_NormalScene.exe"])
         self.RaTisActive = False
         print("RaT DONE!")
