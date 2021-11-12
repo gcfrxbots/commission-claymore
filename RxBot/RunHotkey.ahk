@@ -5,5 +5,6 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #MenuMaskKey vk07  ;Takes the extra CTRL event out of Alt+ hotkeys.
 SetKeyDelay, -1, 50  ;Simulates holding down the key for 50ms.
 
-ControlSend, , {F16}, ahk_exe obs64.exe
+Sleep, 2000
+ControlSend, , {F17}, ahk_exe obs64.exe
 return
