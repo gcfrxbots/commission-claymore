@@ -5,9 +5,6 @@ import math
 import sys
 import ctypes
 import datetime
-import subprocess
-import simpleobsws
-import asyncio
 from obswebsocket import obsws, requests
 from PIL import Image, ImageDraw
 
