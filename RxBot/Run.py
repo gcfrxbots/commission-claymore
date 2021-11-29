@@ -5,6 +5,7 @@ from CustomCommands import CustomCommands, commands_CustomCommands
 
 customcmds = CustomCommands()
 
+# https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
 
 
@@ -137,7 +138,7 @@ def tick():
                 if customcmds.progress >= 500:
                     customcmds.win()
                 else:
-                    customcmds.stopRipandtear()
+                    customcmds.lose()
 
         if customcmds.RaTisActive:
             if customcmds.RaTendTime < datetime.datetime.now():

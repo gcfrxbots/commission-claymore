@@ -6,13 +6,40 @@ import sys
 import ctypes
 import datetime
 import subprocess
+import simpleobsws
+import asyncio
+from obswebsocket import obsws, requests
 from PIL import Image, ImageDraw
 
 
 
 commands_CustomCommands = {
     "!ripandteartest": ('customcmds.startRipandtear', 'cmdArguments', 'user'),
+    "!test": ('customcmds.startTest', 'cmdArguments', 'user'),
 }
+
+def changeScene(sceneName):
+    host = "localhost"
+    port = 4444
+    password = settings["OBS WS PASSWORD"]
+
+    ws = obsws(host, port, password)
+    ws.connect()
+
+    scenes = ws.call(requests.GetSceneList())
+    names = []
+    for s in scenes.getScenes():
+        name = s['name']
+        names.append(name)
+
+    if sceneName not in names:
+        print("Scene %s not found!" % sceneName)
+        exit()
+
+    print(u"Switching to {}".format(sceneName))
+    ws.call(requests.SetCurrentScene(sceneName))
+
+    ws.disconnect()
 
 
 class CustomCommands():
@@ -55,14 +82,19 @@ class CustomCommands():
     def startRipandtear(self, args, user):
         if self.isActive:
             return
-        if (user != settings["TRIGGER USER"]) and (user != settings["CHANNEL"]):
+        if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
             return
+        changeScene(settings["INSTRUCTION SCENE"])
+        time.sleep(settings["INSTRUCTION DURATION"])
+        self.actuallyStartRipandtear()
+
+    def actuallyStartRipandtear(self):
         self.startTime = datetime.datetime.now()
         self.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
         self.isActive = True
         self.progress = 0
         self.drawBar()
-        subprocess.call([r"RunHotkey_BarScene.exe"])
+        changeScene(settings["BAR SCENE"])
         chatConnection.sendMessage("Rip and Tear mode is active! Spam Kill in chat to make me kill!")
 
     def stopRipandtear(self):
@@ -71,7 +103,7 @@ class CustomCommands():
         self.endTime = None
         self.progress = 0
         self.deleteBar()
-        subprocess.call([r"RunHotkey_NormalScene.exe"])
+        changeScene(settings["NORMAL SCENE"])
         chatConnection.sendMessage("Rip and Tear is now over, please stop saying Kill in chat.")
 
     def kill(self):
@@ -91,13 +123,24 @@ class CustomCommands():
         self.startTime = None
         self.endTime = None
         self.deleteBar()
-        subprocess.call([r"RunHotkey_RipAndTearScene.exe"])
+        changeScene(settings["RIP AND TEAR SCENE"])
         self.progress = 0
         self.RaTisActive = True
         self.RaTstartTime = datetime.datetime.now()
         self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
 
+    def lose(self):
+        chatConnection.sendMessage("Rip and tear failed...")
+        self.isActive = False
+        self.startTime = None
+        self.endTime = None
+        self.deleteBar()
+        changeScene(settings["FAIL SCENE"])
+        self.progress = 0
+        time.sleep(settings["FAIL DURATION"])
+        self.returnToNormal()
+
     def returnToNormal(self):
-        subprocess.call([r"RunHotkey_NormalScene.exe"])
+        changeScene(settings["NORMAL SCENE"])
         self.RaTisActive = False
         print("RaT DONE!")

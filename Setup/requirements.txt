@@ -5,3 +5,5 @@ pywin32
 xlrd==1.2.0
 
 Pillow
+
+obs-websocket-py
