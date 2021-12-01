@@ -1,7 +1,7 @@
 from threading import Thread
 from Initialize import *
 initSetup()
-from CustomCommands import CustomCommands, commands_CustomCommands
+from CustomCommands import CustomCommands, commands_CustomCommands, drawBar
 
 customcmds = CustomCommands()
 
@@ -74,11 +74,7 @@ def runcommand(command, cmdArguments, user, mute):
 
 def watchChat():  # Thread to handle twitch/IRC input
     s = chatConnection.openSocket()
-    try:
-        chatConnection.joinRoom(s)
-    except ConnectionResetError:
-        time.sleep(1)
-        chatConnection.joinRoom(s)
+    chatConnection.joinRoom(s)
     readbuffer = ""
     while True:
         readbuffer = readbuffer + s.recv(1024).decode("utf-8")
@@ -123,10 +119,10 @@ def tick():
     cachedProgress = 0
     drain = 0
     while True:
-        time.sleep(0.1)
+        time.sleep(0.5)
         if customcmds.isActive:
 
-            customcmds.drawBar()
+            drawBar.generateGif(customcmds.progress)
 
             drain += 1
             if drain > (customcmds.drainrate * 8):
