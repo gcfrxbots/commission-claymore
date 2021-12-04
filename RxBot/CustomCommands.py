@@ -4,6 +4,7 @@ from Initialize import *
 import math
 import sys
 import ctypes
+import shutil
 import datetime
 from obswebsocket import obsws, requests
 from PIL import Image, ImageDraw
@@ -138,6 +139,7 @@ class CustomCommands():
         # creating new Image object
         img = Image.new("RGBA", (w, h), (255, 0, 0, 0))
         img.save("bar.png")
+        shutil.copyfile("./Resources/emptybar.png", "barglow.png")
 
     def startRipandtear(self, args, user):
         if self.isActive:
@@ -154,6 +156,7 @@ class CustomCommands():
         self.isActive = True
         self.progress = 0
         drawBar.generateGif(0)
+        shutil.copyfile("./Resources/barglow.png", "barglow.png")
         changeScene(settings["BAR SCENE"])
         chatConnection.sendMessage("Rip and Tear mode is active! Spam Kill in chat to make me kill!")
 
