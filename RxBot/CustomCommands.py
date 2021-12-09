@@ -39,6 +39,25 @@ def changeScene(sceneName):
 
     ws.disconnect()
 
+def playMedia(mediaName):
+    print("Playing Media...")
+    host = "localhost"
+    port = 4444
+    password = settings["OBS WS PASSWORD"]
+
+    ws = obsws(host, port, password)
+    ws.connect()
+
+    scenes = ws.call(requests.GetSceneList())
+    names = []
+    for s in scenes.getScenes():
+        name = s['name']
+        names.append(name)
+
+    ws.call(requests.RestartMedia(mediaName))
+
+    ws.disconnect()
+
 
 class bar:
 
@@ -47,20 +66,29 @@ class bar:
         self.target = 0 # Out of 500, how full the bar should be
         self.imgname = "bar.gif"
 
+        self.barimage = Image.open("Resources/barimage.png")
+        left = 0
+        top = 0
+        right = 50
+        bottom = 500
+        self.croppedBarimage = self.barimage.crop((left, top, right, bottom))
+        del self.barimage
+
     def drawBar(self, progress):
         self.progress = progress
         realProgress = 500 - round(self.progress)
         w, h = 50, 500
-        shape = [(0, 500), (w, realProgress)]
+        shape = [(0, 0), (w, realProgress)]
         outlineShape = [(0, 0), (w - 1, h - 1)]
 
         # creating new Image object
-        img = Image.new("RGBA", (w, h), (0, 255, 0, 0))
+        img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
 
+        img.paste(self.croppedBarimage)
         # create rectangle image
         draw = ImageDraw.Draw(img)
 
-        draw.rectangle(shape, fill="red")
+        draw.rectangle(shape, fill=(0, 255, 0))
         draw.rectangle(outlineShape, width=4, outline="black")
         return img
 
@@ -146,8 +174,8 @@ class CustomCommands():
             return
         if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
             return
-        changeScene(settings["INSTRUCTION SCENE"])
-        time.sleep(settings["INSTRUCTION DURATION"])
+        #changeScene(settings["INSTRUCTION SCENE"])
+        #time.sleep(settings["INSTRUCTION DURATION"])
         self.actuallyStartRipandtear()
 
     def actuallyStartRipandtear(self):
@@ -192,7 +220,8 @@ class CustomCommands():
 
     def lose(self):
         chatConnection.sendMessage("Rip and tear failed...")
-        changeScene(settings["FAIL SCENE"])
+        #changeScene(settings["FAIL SCENE"])
+        playMedia("failedrip")
         self.isActive = False
         self.startTime = None
         self.endTime = None
