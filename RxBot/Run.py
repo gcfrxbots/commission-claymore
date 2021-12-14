@@ -1,9 +1,8 @@
 from threading import Thread
 from Initialize import *
 initSetup()
-from CustomCommands import CustomCommands, commands_CustomCommands, drawBar
+from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar
 
-customcmds = CustomCommands()
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
@@ -93,11 +92,18 @@ def watchChat():  # Thread to handle twitch/IRC input
                 # Run the commands function
                 if command[0] == "!":
                     runcommand(command, cmdArguments, user, False)
-                if "kill" in command:
-                    customcmds.kill()
-                if customcmds.triggerMsg.strip():
-                    if customcmds.triggerMsg in message:
-                        customcmds.startRipandtear(None, user)
+                # Spam words
+                if COMMON.spamMsg in command and COMMON.isActive:
+                    COMMON.trigger()
+
+                if RIPANDTEAR.triggerMsg in message and RIPANDTEAR.triggerMsg.strip():
+                    RIPANDTEAR.start(None, user)
+                if INSPIRE.triggerMsg in message and INSPIRE.triggerMsg.strip():
+                    INSPIRE.start(None, user)
+                if CHEER.triggerMsg in message and CHEER.triggerMsg.strip():
+                    CHEER.start(None, user)
+                if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
+                    LEGENDARY.start(None, user)
 
 
 def console():  # Thread to handle console input
@@ -119,26 +125,25 @@ def tick():
     cachedProgress = 0
     drain = 0
     while True:
-        time.sleep(0.5)
-        if customcmds.isActive:
-
-            drawBar.generateGif(customcmds.progress)
+        time.sleep(0.2)
+        if COMMON.isActive:
+            drawBar.generateGif(COMMON.progress)
 
             drain += 1
-            if drain > (customcmds.drainrate * 8):
+            if drain > (COMMON.drainrate * 8):
                 drain = 0
-                if 500 > customcmds.progress > 0:
-                    customcmds.progress -= 10
+                if 500 > COMMON.progress > 0:
+                    COMMON.progress -= 10
 
-            if customcmds.endTime < datetime.datetime.now():
-                if customcmds.progress >= 500:
-                    customcmds.win()
+            if COMMON.endTime < datetime.datetime.now():
+                if COMMON.progress >= 500:
+                    COMMON.win()
                 else:
-                    customcmds.lose()
+                    COMMON.lose()
 
-        if customcmds.RaTisActive:
-            if customcmds.RaTendTime < datetime.datetime.now():
-                customcmds.returnToNormal()
+        if COMMON.isWinActive:
+            if COMMON.activeEndTime < datetime.datetime.now():
+                COMMON.returnToNormal()
 
 
 if __name__ == "__main__":

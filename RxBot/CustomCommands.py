@@ -12,11 +12,13 @@ from PIL import Image, ImageDraw
 
 
 commands_CustomCommands = {
-    "!ripandteartest": ('customcmds.startRipandtear', 'cmdArguments', 'user'),
+    "!ripandteartest": ('RIPANDTEAR.start', 'cmdArguments', 'user'),
+    "!inspiretest": ('INSPIRE.start', 'cmdArguments', 'user'),
+    "!cheertest": ('CHEER.start', 'cmdArguments', 'user'),
+    "!legendtest": ('LEGENDARY.start', 'cmdArguments', 'user'),
 }
 
 def changeScene(sceneName):
-    print("Switching...")
     host = "localhost"
     port = 4444
     password = settings["OBS WS PASSWORD"]
@@ -58,6 +60,11 @@ def playMedia(mediaName):
 
     ws.disconnect()
 
+def lazyround(x):
+    if not x:
+        return x
+    return 5 * round(x/5)
+
 
 class bar:
 
@@ -73,6 +80,14 @@ class bar:
         bottom = 500
         self.croppedBarimage = self.barimage.crop((left, top, right, bottom))
         del self.barimage
+
+    def deleteBar(self):
+        print("Deleting the bar!")
+        w, h = 50, 500
+        # creating new Image object
+        img = Image.new("RGBA", (w, h), (255, 0, 0, 0))
+        img.save("bar.png")
+        shutil.copyfile("./Resources/emptybar.png", "barglow.png")
 
     def drawBar(self, progress):
         self.progress = progress
@@ -109,10 +124,12 @@ class bar:
             except EOFError:
                 return (tot_duration / 1000) - 0.9  # returns total duration in s
 
-    def generateGif(self, target):
+    def generateGif(self, target, force=False):
         self.target = target
         # target is out of 500 like Progress above
-
+        if not force:
+            if lazyround(self.target) == lazyround(self.progress):  # Don't do anything if I don't need to redraw the bar.
+                return
         # Create the frames
         frames = []
 
@@ -146,91 +163,351 @@ class bar:
         self.freezeImage()
         time.sleep(0.3)
 
-drawBar = bar()
-
-class CustomCommands():
+class common:
     def __init__(self):
         self.startTime = None
         self.endTime = None
         self.isActive = False
         self.progress = 0.0  # PROGRESS OUT OF 500
         self.drainrate = settings["DRAIN RATE"]
-        self.deleteBar()
         self.killvalue = 2
-        self.triggerMsg = settings["TRIGGER MESSAGE"]
-        self.RaTstartTime = None
-        self.RaTendTime = None
-        self.RaTisActive = False
+        self.activeStartTime = None
+        self.activeEndTime = None
+        self.isWinActive = False
+        self.currentlyActiveMode = None
+        self.spamMsg = ""
 
-    def deleteBar(self):
-        w, h = 50, 500
-        # creating new Image object
-        img = Image.new("RGBA", (w, h), (255, 0, 0, 0))
-        img.save("bar.png")
-        shutil.copyfile("./Resources/emptybar.png", "barglow.png")
+    def returnToNormal(self):
+        if self.currentlyActiveMode == "Rip and Tear":
+            RIPANDTEAR.returnToNormal()
+        elif self.currentlyActiveMode == "Inspire":
+            INSPIRE.returnToNormal()
+        elif self.currentlyActiveMode == "Cheer":
+            CHEER.returnToNormal()
+        elif self.currentlyActiveMode == "Legendary":
+            LEGENDARY.returnToNormal()
+        elif not self.currentlyActiveMode:
+            return
 
-    def startRipandtear(self, args, user):
-        if self.isActive:
+    def win(self):
+        if self.currentlyActiveMode == "Rip and Tear":
+            RIPANDTEAR.win()
+        elif self.currentlyActiveMode == "Inspire":
+            INSPIRE.win()
+        elif self.currentlyActiveMode == "Cheer":
+            CHEER.win()
+        elif self.currentlyActiveMode == "Legendary":
+            LEGENDARY.win()
+        elif not self.currentlyActiveMode:
+            return
+
+    def lose(self):
+        if self.currentlyActiveMode == "Rip and Tear":
+            RIPANDTEAR.lose()
+        elif self.currentlyActiveMode == "Inspire":
+            INSPIRE.lose()
+        elif self.currentlyActiveMode == "Cheer":
+            CHEER.lose()
+        elif self.currentlyActiveMode == "Legendary":
+            LEGENDARY.lose()
+        elif not self.currentlyActiveMode:
+            return
+
+    def trigger(self):
+        if self.currentlyActiveMode == "Rip and Tear":
+            RIPANDTEAR.trigger()
+        elif self.currentlyActiveMode == "Inspire":
+            INSPIRE.trigger()
+        elif self.currentlyActiveMode == "Cheer":
+            CHEER.trigger()
+        elif self.currentlyActiveMode == "Legendary":
+            LEGENDARY.trigger()
+        elif not self.currentlyActiveMode:
+            return
+
+class ripAndTear():
+    def __init__(self):
+        self.triggerMsg = settings["RAT TRIGGER MESSAGE"]
+        self.spamMsg = settings["RAT SPAM MESSAGE"]
+
+    def start(self, args, user):
+        if COMMON.isActive:
             return
         if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
             return
-        #changeScene(settings["INSTRUCTION SCENE"])
-        #time.sleep(settings["INSTRUCTION DURATION"])
-        self.actuallyStartRipandtear()
+        self.actuallyStart()
 
-    def actuallyStartRipandtear(self):
-        self.startTime = datetime.datetime.now()
-        self.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
-        self.isActive = True
-        self.progress = 0
-        drawBar.generateGif(0)
+    def actuallyStart(self):
+        COMMON.currentlyActiveMode = "Rip and Tear"
+        COMMON.spamMsg = settings["RAT SPAM MESSAGE"]
+        COMMON.startTime = datetime.datetime.now()
+        COMMON.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
+        COMMON.isActive = True
+        COMMON.progress = 0
+        drawBar.generateGif(0, True)
         shutil.copyfile("./Resources/barglow.png", "barglow.png")
-        changeScene(settings["BAR SCENE"])
-        chatConnection.sendMessage("Rip and Tear mode is active! Spam Kill in chat to make me kill!")
+        changeScene(settings["RAT BAR SCENE"])
+        chatConnection.sendMessage("Rip and Tear mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
 
-    def stopRipandtear(self):
-        self.isActive = False
-        self.startTime = None
-        self.endTime = None
-        self.progress = 0
-        self.deleteBar()
+    def stop(self):
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        COMMON.progress = 0
+        drawBar.deleteBar()
         changeScene(settings["NORMAL SCENE"])
-        chatConnection.sendMessage("Rip and Tear is now over, please stop saying Kill in chat.")
+        chatConnection.sendMessage("Rip and Tear is now over, please stop saying %s in chat." % COMMON.spamMsg)
 
-    def kill(self):
-        if self.isActive:
+    def trigger(self):
+        if COMMON.isActive:
             users = len(core.getAllUsers())
             difficulty = settings["DIFFICULTY"]
 
-            self.killvalue = 500 / ((users)*(difficulty*.8))
-            self.progress += self.killvalue
-            print(self.progress)
+            COMMON.triggervalue = 500 / ((users)*(difficulty*.8))
+            COMMON.progress += COMMON.triggervalue
+            print(COMMON.progress)
 
     def win(self):
-        chatConnection.sendMessage("RIP AND TEAR MODE ENGAGED!")
-        self.isActive = False
-        self.startTime = None
-        self.endTime = None
-        self.deleteBar()
-        changeScene(settings["RIP AND TEAR SCENE"])
-        self.progress = 0
-        self.RaTisActive = True
-        self.RaTstartTime = datetime.datetime.now()
-        self.RaTendTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["RIP AND TEAR DURATION"])
+        #chatConnection.sendMessage("RIP AND TEAR MODE ENGAGED!")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        changeScene(settings["RAT ACTIVE SCENE"])
+        COMMON.progress = 0
+        COMMON.isWinActive = True
+        COMMON.activeStartTime = datetime.datetime.now()
+        COMMON.activeEndTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["ACTIVE DURATION"])
 
     def lose(self):
-        chatConnection.sendMessage("Rip and tear failed...")
+        #chatConnection.sendMessage("Rip and tear failed...")
         #changeScene(settings["FAIL SCENE"])
         playMedia("failedrip")
-        self.isActive = False
-        self.startTime = None
-        self.endTime = None
-        self.deleteBar()
-        self.progress = 0
-        time.sleep(settings["FAIL DURATION"])
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        COMMON.progress = 0
         self.returnToNormal()
 
     def returnToNormal(self):
         changeScene(settings["NORMAL SCENE"])
-        self.RaTisActive = False
-        print("RaT DONE!")
+        COMMON.isWinActive = False
+        print("DONE!")
+
+class inspire():
+    def __init__(self):
+        self.triggerMsg = settings["INSPIRE TRIGGER MESSAGE"]
+        self.spamMsg = settings["INSPIRE SPAM MESSAGE"]
+
+    def start(self, args, user):
+        if COMMON.isActive:
+            return
+        if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
+            return
+        self.actuallyStart()
+
+    def actuallyStart(self):
+        COMMON.currentlyActiveMode = "Inspire"
+        COMMON.spamMsg = settings["INSPIRE SPAM MESSAGE"]
+        COMMON.startTime = datetime.datetime.now()
+        COMMON.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
+        COMMON.isActive = True
+        COMMON.progress = 0
+        drawBar.generateGif(0, True)
+        shutil.copyfile("./Resources/barglow.png", "barglow.png")
+        changeScene(settings["INSPIRE BAR SCENE"])
+        chatConnection.sendMessage("Inspire mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+
+    def stop(self):
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        COMMON.progress = 0
+        drawBar.deleteBar()
+        changeScene(settings["NORMAL SCENE"])
+        chatConnection.sendMessage("Inspire mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+
+    def trigger(self):
+        if COMMON.isActive:
+            users = len(core.getAllUsers())
+            difficulty = settings["DIFFICULTY"]
+
+            COMMON.triggervalue = 500 / ((users)*(difficulty*.8))
+            COMMON.progress += COMMON.triggervalue
+            print(COMMON.progress)
+
+    def win(self):
+        #chatConnection.sendMessage("RIP AND TEAR MODE ENGAGED!")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        changeScene(settings["INSPIRE ACTIVE SCENE"])
+        COMMON.progress = 0
+        COMMON.isWinActive = True
+        COMMON.activeStartTime = datetime.datetime.now()
+        COMMON.activeEndTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["ACTIVE DURATION"])
+
+    def lose(self):
+        #chatConnection.sendMessage("Rip and tear failed...")
+        #changeScene(settings["FAIL SCENE"])
+        playMedia("failedrip")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        COMMON.progress = 0
+        self.returnToNormal()
+
+    def returnToNormal(self):
+        changeScene(settings["NORMAL SCENE"])
+        COMMON.isWinActive = False
+        print("DONE!")
+
+class cheer():
+    def __init__(self):
+        self.triggerMsg = settings["CHEER TRIGGER MESSAGE"]
+        self.spamMsg = settings["CHEER SPAM MESSAGE"]
+
+    def start(self, args, user):
+        if COMMON.isActive:
+            return
+        if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
+            return
+        self.actuallyStart()
+
+    def actuallyStart(self):
+        COMMON.currentlyActiveMode = "Cheer"
+        COMMON.spamMsg = settings["CHEER SPAM MESSAGE"]
+        COMMON.startTime = datetime.datetime.now()
+        COMMON.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
+        COMMON.isActive = True
+        COMMON.progress = 0
+        drawBar.generateGif(0, True)
+        shutil.copyfile("./Resources/barglow.png", "barglow.png")
+        changeScene(settings["CHEER BAR SCENE"])
+        chatConnection.sendMessage("Cheer mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+
+    def stop(self):
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        COMMON.progress = 0
+        drawBar.deleteBar()
+        changeScene(settings["NORMAL SCENE"])
+        chatConnection.sendMessage("Cheer mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+
+    def trigger(self):
+        if COMMON.isActive:
+            users = len(core.getAllUsers())
+            difficulty = settings["DIFFICULTY"]
+
+            COMMON.triggervalue = 500 / ((users)*(difficulty*.8))
+            COMMON.progress += COMMON.triggervalue
+            print(COMMON.progress)
+
+    def win(self):
+        #chatConnection.sendMessage("RIP AND TEAR MODE ENGAGED!")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        changeScene(settings["CHEER ACTIVE SCENE"])
+        COMMON.progress = 0
+        COMMON.isWinActive = True
+        COMMON.activeStartTime = datetime.datetime.now()
+        COMMON.activeEndTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["ACTIVE DURATION"])
+
+    def lose(self):
+        #chatConnection.sendMessage("Rip and tear failed...")
+        #changeScene(settings["FAIL SCENE"])
+        playMedia("failedrip")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        COMMON.progress = 0
+        self.returnToNormal()
+
+    def returnToNormal(self):
+        changeScene(settings["NORMAL SCENE"])
+        COMMON.isWinActive = False
+        print("DONE!")
+
+class legendary():
+    def __init__(self):
+        self.triggerMsg = settings["LEGENDARY TRIGGER MESSAGE"]
+        self.spamMsg = settings["LEGENDARY SPAM MESSAGE"]
+
+    def start(self, args, user):
+        if COMMON.isActive:
+            return
+        if (user.lower() != settings["TRIGGER USER"].lower()) and (user != settings["CHANNEL"]):
+            return
+        self.actuallyStart()
+
+    def actuallyStart(self):
+        COMMON.currentlyActiveMode = "Legendary"
+        COMMON.spamMsg = settings["LEGENDARY SPAM MESSAGE"]
+        COMMON.startTime = datetime.datetime.now()
+        COMMON.endTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["BAR DURATION"])
+        COMMON.isActive = True
+        COMMON.progress = 0
+        drawBar.generateGif(0, True)
+        shutil.copyfile("./Resources/barglow.png", "barglow.png")
+        changeScene(settings["LEGENDARY BAR SCENE"])
+        chatConnection.sendMessage("Legendary mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+
+    def stop(self):
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        COMMON.progress = 0
+        drawBar.deleteBar()
+        changeScene(settings["NORMAL SCENE"])
+        chatConnection.sendMessage("Legendary mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+
+    def trigger(self):
+        if COMMON.isActive:
+            users = len(core.getAllUsers())
+            difficulty = settings["DIFFICULTY"]
+
+            COMMON.triggervalue = 500 / ((users)*(difficulty*.8))
+            COMMON.progress += COMMON.triggervalue
+            print(COMMON.progress)
+
+    def win(self):
+        #chatConnection.sendMessage("RIP AND TEAR MODE ENGAGED!")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        changeScene(settings["LEGENDARY ACTIVE SCENE"])
+        COMMON.progress = 0
+        COMMON.isWinActive = True
+        COMMON.activeStartTime = datetime.datetime.now()
+        COMMON.activeEndTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["ACTIVE DURATION"])
+
+    def lose(self):
+        #chatConnection.sendMessage("Rip and tear failed...")
+        #changeScene(settings["FAIL SCENE"])
+        playMedia("failedrip")
+        COMMON.isActive = False
+        COMMON.startTime = None
+        COMMON.endTime = None
+        drawBar.deleteBar()
+        COMMON.progress = 0
+        self.returnToNormal()
+
+    def returnToNormal(self):
+        changeScene(settings["NORMAL SCENE"])
+        COMMON.isWinActive = False
+        print("DONE!")
+
+drawBar = bar()
+COMMON = common()
+RIPANDTEAR = ripAndTear()
+INSPIRE = inspire()
+CHEER = cheer()
+LEGENDARY = legendary()
