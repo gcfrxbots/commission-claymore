@@ -1,7 +1,7 @@
 from threading import Thread
 from Initialize import *
 initSetup()
-from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar
+from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource
 
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
