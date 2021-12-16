@@ -1,7 +1,7 @@
 from threading import Thread
 from Initialize import *
 initSetup()
-from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource
+from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey
 
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
@@ -104,6 +104,10 @@ def watchChat():  # Thread to handle twitch/IRC input
                     CHEER.start(None, user)
                 if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
                     LEGENDARY.start(None, user)
+
+                if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
+                    sendHotkey()
+
 
 
 def console():  # Thread to handle console input

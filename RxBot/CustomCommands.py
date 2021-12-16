@@ -88,6 +88,21 @@ def playMedia(mediaName):
 
     ws.disconnect()
 
+def sendHotkey():
+    hotkey = settings["HOTKEY TO SEND"]
+    print("Sending Hotkey...")
+    host = "localhost"
+    port = 4444
+    password = settings["OBS WS PASSWORD"]
+
+    ws = obsws(host, port, password)
+    ws.connect()
+
+
+    ws.call(requests.TriggerHotkeyBySequence(hotkey, None))
+
+    ws.disconnect()
+
 
 def lazyround(x):
     if not x:
@@ -205,6 +220,7 @@ class common:
         self.currentlyActiveMode = None
         self.spamMsg = ""
         self.returnToNormal()
+        self.hotkeyTrigger = settings["HOTKEY TRIGGER PHRASE"].strip()
 
     def hideAllSources(self):
         sourceNameList = []

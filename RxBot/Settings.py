@@ -55,6 +55,9 @@ defaultSettings = [
     ("LEGENDARY SPAM MESSAGE", "legend", "The message users in chat will spam to fill the bar"),
     ("LEGENDARY BAR SOURCE", "LEGENDARY Bar", "OBS Source name for the Legendary Source with the bar in it"),
     ("LEGENDARY ACTIVE SOURCE", "LEGENDARY Active", "OBS Source name for the Legendary Source if the chat fills the bar"),
+    ("", "", ""),
+    ("HOTKEY TRIGGER PHRASE", "", "The message from another bot that will trigger the hotkey configured below"),
+    ("HOTKEY TO SEND", "OBS_KEY_F17", "The message from another bot that will trigger the hotkey configured below. Keys are here: https://bit.ly/3dZVwGe"),
 ]
 
 
