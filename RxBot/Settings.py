@@ -11,9 +11,11 @@ except ImportError as e:
 
 parser = argparse.ArgumentParser(description='Generate Settings File')
 parser.add_argument('--g', dest="GenSettings", action="store_true")
-parser.set_defaults(GenSettings=False)
+parser.add_argument('--d', dest="debugMode", action="store_true")
+parser.set_defaults(GenSettings=False, debugMode=False)
 
 GenSettings = (vars(parser.parse_args())["GenSettings"])
+debugMode = (vars(parser.parse_args())["debugMode"])
 
 
 '''----------------------SETTINGS----------------------'''

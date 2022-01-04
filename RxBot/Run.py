@@ -5,8 +5,6 @@ from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, comman
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
-
-
 class runMiscControls:
 
     def __init__(self):
@@ -77,6 +75,8 @@ def main():
         result = chatConnection.ws.recv()
         resultDict = json.loads(result)
         #print(resultDict)
+        if debugMode:
+            print(resultDict)
         if "event" in resultDict.keys() and not chatConnection.active:
             if "is_live" in resultDict["event"]:
                 print(">> Connection to chat successful!")
