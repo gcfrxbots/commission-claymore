@@ -180,7 +180,7 @@ def tick():
                 else:
                     COMMON.lose()
 
-            if datetime.datetime.now() > cachedTime + datetime.timedelta(milliseconds=2000):
+            if datetime.datetime.now() > cachedTime + datetime.timedelta(milliseconds=drawBar.bardelay):
                 cachedTime = datetime.datetime.now()
                 drawBar.generateGif(COMMON.progress)
 

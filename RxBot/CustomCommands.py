@@ -132,6 +132,7 @@ class bar:
         self.progress = 0  # Out of 500, how full the bar is
         self.target = 0 # Out of 500, how full the bar should be
         self.imgname = "bar.gif"
+        self.bardelay = settings["BAR ANIMATION DELAY"]
 
         self.barimage = Image.open("Resources/barimage.png")
         left = 0
