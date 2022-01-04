@@ -5,6 +5,7 @@ import json
 import socket
 import os
 import datetime
+from websocket import create_connection
 try:
     import xlsxwriter
     import xlrd
@@ -13,42 +14,6 @@ except ImportError as e:
     print(e)
     raise ImportError(">>> One or more required packages are not properly installed! Run INSTALL_REQUIREMENTS.bat to fix!")
 global settings
-
-class socketConnection:
-    def __init__(self):
-        self.socketConn = socket.socket()
-
-    def openSocket(self):
-        self.socketConn.connect(("irc.chat.twitch.tv", int(settings['PORT'])))
-        self.socketConn.send(("PASS " + settings['BOT OAUTH'] + "\r\n").encode("utf-8"))
-        self.socketConn.send(("NICK " + settings['BOT NAME'] + "\r\n").encode("utf-8"))
-        self.socketConn.send(("JOIN #" + settings['CHANNEL'] + "\r\n").encode("utf-8"))
-        return self.socketConn
-
-    def sendMessage(self, message):
-        print(message)
-        messageTemp = "PRIVMSG #" + settings['CHANNEL'] + " : " + message
-        self.socketConn.send((messageTemp + "\r\n").encode("utf-8"))
-        print("Sent: " + messageTemp)
-
-    def joinRoom(self, s):
-        readbuffer = ""
-        Loading = True
-
-        while Loading:
-            readbuffer = readbuffer + s.recv(1024).decode("utf-8")
-            temp = readbuffer.split("\n")
-            readbuffer = temp.pop()
-
-            for line in temp:
-                Loading = self.loadingComplete(line)
-
-    def loadingComplete(self, line):
-        if ("End of /NAMES list" in line):
-            print(">> Bot Startup complete!")
-            return False
-        else:
-            return True
 
 class coreFunctions:
     def __init__(self):
@@ -77,11 +42,6 @@ class coreFunctions:
 
         return users
 
-
-
-
-
-chatConnection = socketConnection()
 core = coreFunctions()
 
 def initSetup():
@@ -100,4 +60,67 @@ def initSetup():
     settings = loadedsettings
 
     return
+
+
+class chat:
+    global settings
+
+    def __init__(self):
+        self.ws = None
+        self.url = "wss://api.casterlabs.co/v2/koi?client_id=LmHG2ux992BxqQ7w9RJrfhkW"
+        self.puppet = False
+        self.active = False
+
+        # Set the normal token
+        if os.path.exists("../Config/token.txt"):
+            with open("../Config/token.txt", "r") as f:
+                self.token = f.read()
+                f.close()
+
+        # Set the puppet token, if it exists
+        if os.path.exists("../Config/puppet.txt"):
+            self.puppet = True
+            with open("../Config/puppet.txt", "r") as f:
+                self.puppetToken = f.read()
+                f.close()
+
+    def login(self):
+        loginRequest = {
+                "type": "LOGIN",
+                "token": self.token
+            }
+        self.ws.send(json.dumps(loginRequest))
+        time.sleep(1)
+
+    def puppetlogin(self):
+        time.sleep(1.5)
+        loginRequest = {
+            "type": "PUPPET_LOGIN",
+            "token": self.puppetToken
+        }
+        self.ws.send(json.dumps(loginRequest))
+
+    def sendRequest(self, request):
+        self.ws.send(json.dumps(request))
+
+    def sendToChat(self, message):
+        if message:
+            if not self.puppet:
+                    request = {
+                      "type": "CHAT",
+                      "message": message,
+                      "chatter": "CLIENT"}
+            else:
+                request = {
+                    "type": "CHAT",
+                    "message": message,
+                    "chatter": "PUPPET"}
+            self.sendRequest(request)
+
+
+    def start(self):
+        self.ws = create_connection(self.url)
+        self.login()
+
+chatConnection = chat()
 

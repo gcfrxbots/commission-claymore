@@ -3,7 +3,6 @@ from Initialize import *
 initSetup()
 from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey
 
-
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
 
@@ -41,7 +40,7 @@ def runcommand(command, cmdArguments, user, mute):
                     arg1 = commands[item][2]
                     arg2 = commands[item][3]
                 else:
-                    chatConnection.sendMessage("You don't have permission to do this.")
+                    chatConnection.sendToChat("You don't have permission to do this.")
                     return
             elif commands[item][0] == "STREAMER":  # STREAMER ONLY COMMANDS:
                 if (user == settings['CHANNEL']):
@@ -49,7 +48,7 @@ def runcommand(command, cmdArguments, user, mute):
                     arg1 = commands[item][2]
                     arg2 = commands[item][3]
                 else:
-                    chatConnection.sendMessage("You don't have permission to do this.")
+                    chatConnection.sendToChat("You don't have permission to do this.")
                     return
             else:
                 cmd = commands[item][0]
@@ -68,46 +67,84 @@ def runcommand(command, cmdArguments, user, mute):
     if not output:
         return
 
-    chatConnection.sendMessage(user + " >> " + output)
+    chatConnection.sendToChat(user + " >> " + output)
 
 
-def watchChat():  # Thread to handle twitch/IRC input
-    s = chatConnection.openSocket()
-    chatConnection.joinRoom(s)
-    readbuffer = ""
+def main():
+    global settings
+    chatConnection.start()
     while True:
-        readbuffer = readbuffer + s.recv(1024).decode("utf-8")
-        temp = readbuffer.split("\n")
-        readbuffer = temp.pop()
-        for line in temp:
-            if "PING" in line:
-                s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
-            else:
-                # All these things break apart the given chat message to make things easier to work with.
-                user = misc.getUser(line)
-                message = str(misc.getMessage(line))
-                command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
-                cmdArguments = message.replace(command or "\r" or "\n", "").strip()
-                print(("(" + misc.formatTime() + ")>> " + user + ": " + message))
-                # Run the commands function
-                if command[0] == "!":
-                    runcommand(command, cmdArguments, user, False)
-                # Spam words
-                if COMMON.spamMsg in command and COMMON.isActive:
-                    COMMON.trigger()
+        result = chatConnection.ws.recv()
+        resultDict = json.loads(result)
+        #print(resultDict)
+        if "event" in resultDict.keys() and not chatConnection.active:
+            if "is_live" in resultDict["event"]:
+                print(">> Connection to chat successful!")
+                channel = resultDict["event"]["streamer"]["username"]
+                #settings["CHANNEL"] = channel
+                chatConnection.active = True
+                if chatConnection.puppet:
+                    chatConnection.puppetlogin()
 
-                if RIPANDTEAR.triggerMsg in message and RIPANDTEAR.triggerMsg.strip():
-                    RIPANDTEAR.start(None, user)
-                if INSPIRE.triggerMsg in message and INSPIRE.triggerMsg.strip():
-                    INSPIRE.start(None, user)
-                if CHEER.triggerMsg in message and CHEER.triggerMsg.strip():
-                    CHEER.start(None, user)
-                if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
-                    LEGENDARY.start(None, user)
+        if "event" in resultDict.keys():  # Any actual event is under this
+            eventKeys = resultDict["event"].keys()
+            if "message" in eventKeys:  # Got chat message, display it then process commands
+                try:
+                    message = resultDict["event"]["message"]
+                    user = resultDict["event"]["sender"]["displayname"]
+                    command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
+                    cmdarguments = message.replace(command or "\r" or "\n", "")[1:]
+                    print("(" + misc.formatTime() + ")>> " + user + ": " + message)
 
-                if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
-                    sendHotkey()
+                    if command[0] == "!":
+                        runcommand(command, cmdarguments, user, False)
+                    # Spam words
+                    if COMMON.spamMsg in command and COMMON.isActive:
+                        COMMON.trigger()
 
+                    if RIPANDTEAR.triggerMsg in message and RIPANDTEAR.triggerMsg.strip():
+                        RIPANDTEAR.start(None, user)
+                    if INSPIRE.triggerMsg in message and INSPIRE.triggerMsg.strip():
+                        INSPIRE.start(None, user)
+                    if CHEER.triggerMsg in message and CHEER.triggerMsg.strip():
+                        CHEER.start(None, user)
+                    if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
+                        LEGENDARY.start(None, user)
+
+                    if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
+                        sendHotkey()
+                except:
+                    pass
+
+            if "reward" in eventKeys:
+                try:
+                    rewardTitle = resultDict["event"]["reward"]["title"]
+                    rewardPrompt = resultDict["event"]["reward"]["prompt"]
+                    rewardCost = resultDict["event"]["reward"]["cost"]
+                    user = resultDict["event"]["sender"]["displayname"]
+                    print("(" + misc.formatTime() + ")>> " + user + " redeemed reward title %s, prompt %s, for %s points." % (rewardTitle, rewardPrompt, rewardCost))
+                except:
+                    pass
+
+            if "subscriber" in eventKeys:
+                try:
+                    subUsername = resultDict["event"]["subscriber"]["username"]
+                    subMonths = resultDict["event"]["months"]
+                    subLevel = resultDict["event"]["sub_level"]
+                    print("(" + misc.formatTime() + ")>> " + subUsername + " subscribed with level %s for %s months." % (subLevel, subMonths))
+                except:
+                    pass
+
+            if "donations" in eventKeys:
+                    bitsAmount = round(resultDict["event"]["donations"][0]["amount"])
+                    user = resultDict["event"]["sender"]["displayname"]
+                    message = resultDict["event"]["message"]
+                    print("(" + misc.formatTime() + ")>> " + user + " cheered %s bits with the message %s" % (bitsAmount, message))
+
+        if "disclaimer" in resultDict.keys():  # Should just be keepalives?
+            if resultDict["type"] == "KEEP_ALIVE":
+                response = {"type": "KEEP_ALIVE"}
+                chatConnection.sendRequest(response)
 
 
 def console():  # Thread to handle console input
@@ -126,13 +163,11 @@ def console():  # Thread to handle console input
                 os._exit(1)
 
 def tick():
-    cachedProgress = 0
+    cachedTime = datetime.datetime.now()
     drain = 0
     while True:
         time.sleep(0.2)
         if COMMON.isActive:
-            drawBar.generateGif(COMMON.progress)
-
             drain += 1
             if drain > (COMMON.drainrate * 8):
                 drain = 0
@@ -145,6 +180,10 @@ def tick():
                 else:
                     COMMON.lose()
 
+            if datetime.datetime.now() > cachedTime + datetime.timedelta(milliseconds=2000):
+                cachedTime = datetime.datetime.now()
+                drawBar.generateGif(COMMON.progress)
+
         if COMMON.isWinActive:
             if COMMON.activeEndTime < datetime.datetime.now():
                 COMMON.returnToNormal()
@@ -153,7 +192,7 @@ def tick():
 if __name__ == "__main__":
     misc = runMiscControls()
 
-    t1 = Thread(target=watchChat)
+    t1 = Thread(target=main)
     t2 = Thread(target=console)
     t3 = Thread(target=tick)
 

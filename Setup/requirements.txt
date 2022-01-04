@@ -4,6 +4,12 @@ pywin32
 
 xlrd==1.2.0
 
-Pillow
+validators
+
+websocket
+
+websocket-client
 
 obs-websocket-py
+
+Pillow

@@ -10,13 +10,13 @@ from obswebsocket import obsws, requests
 from PIL import Image, ImageDraw
 
 
-
 commands_CustomCommands = {
     "!ripandteartest": ('RIPANDTEAR.start', 'cmdArguments', 'user'),
     "!inspiretest": ('INSPIRE.start', 'cmdArguments', 'user'),
     "!cheertest": ('CHEER.start', 'cmdArguments', 'user'),
     "!legendtest": ('LEGENDARY.start', 'cmdArguments', 'user'),
 }
+
 
 def showScene(sceneName):
     host = "localhost"
@@ -27,6 +27,7 @@ def showScene(sceneName):
     ws.connect()
 
     scenes = ws.call(requests.GetSceneList())
+    print(scenes)
     names = []
     for s in scenes.getScenes():
         name = s['name']
@@ -104,10 +105,25 @@ def sendHotkey():
     ws.disconnect()
 
 
+def activateFilter(filterName):
+    host = "localhost"
+    port = 4444
+    password = settings["OBS WS PASSWORD"]
+
+    ws = obsws(host, port, password)
+    ws.connect()
+
+    ws.call(requests.SetSourceFilterVisibility("WG - ClaymoreEXPBar", str(filterName), True))
+
+    ws.disconnect()
+
+
+
+
 def lazyround(x):
     if not x:
         return x
-    return 5 * round(x/5)
+    return 10 * round(x/10)
 
 
 class bar:
@@ -168,43 +184,50 @@ class bar:
                 return (tot_duration / 1000) - 0.9  # returns total duration in s
 
     def generateGif(self, target, force=False):
-        self.target = target
-        # target is out of 500 like Progress above
-        if not force:
-            if lazyround(self.target) == lazyround(self.progress):  # Don't do anything if I don't need to redraw the bar.
-                return
-        # Create the frames
-        frames = []
+        target = round(target/5)
+        if target > 100:
+            target = 100
+        activateFilter(target)
 
-        difference = abs(self.target - self.progress)
-        cycles = round((difference / 5) + 55)
 
-        if self.target > self.progress:
-            # POSITIVES
-            for i in range(cycles):
-                new_frame = self.drawBar(self.progress)
-                frames.append(new_frame)
-                if self.progress < self.target:
-                    self.progress += 5
-        else:
-            # NEGATIVES
-            for i in range(cycles):
-                new_frame = self.drawBar(self.progress)
-                frames.append(new_frame)
-                if self.progress > self.target:
-                    self.progress -= 5
+        # self.target = target
+        # # target is out of 500 like Progress above
+        # if not force:
+        #     if lazyround(self.target) == lazyround(self.progress):  # Don't do anything if I don't need to redraw the bar.
+        #         return
+        # # Create the frames
+        # frames = []
+        #
+        # difference = abs(self.target - self.progress)
+        # cycles = round((difference / 5) + 55)
+        #
+        # if self.target > self.progress:
+        #     # POSITIVES
+        #     for i in range(cycles):
+        #         new_frame = self.drawBar(self.progress)
+        #         frames.append(new_frame)
+        #         if self.progress < self.target:
+        #             self.progress += 5
+        # else:
+        #     # NEGATIVES
+        #     for i in range(cycles):
+        #         new_frame = self.drawBar(self.progress)
+        #         frames.append(new_frame)
+        #         if self.progress > self.target:
+        #             self.progress -= 5
+        #
+        # # Save into a GIF file
+        # frames[0].save(self.imgname, format='GIF',
+        #                append_images=frames[1:], save_all=True, duration=30, loop=0)
+        #
+        # timeToDelay = self.find_duration(Image.open(self.imgname))
+        # timeToDelay = round(timeToDelay, 1)
+        # if timeToDelay < 0.2:
+        #     timeToDelay = 0.2
+        # time.sleep(timeToDelay)
+        # self.freezeImage()
+        # time.sleep(0.3)
 
-        # Save into a GIF file
-        frames[0].save(self.imgname, format='GIF',
-                       append_images=frames[1:], save_all=True, duration=30, loop=0)
-
-        timeToDelay = self.find_duration(Image.open(self.imgname))
-        timeToDelay = round(timeToDelay, 1)
-        if timeToDelay < 0.2:
-            timeToDelay = 0.2
-        time.sleep(timeToDelay)
-        self.freezeImage()
-        time.sleep(0.3)
 
 class common:
     def __init__(self):
@@ -289,7 +312,7 @@ class ripAndTear():
         COMMON.isActive = True
         COMMON.progress = 0
         showSource(settings["RAT BAR SOURCE"])
-        chatConnection.sendMessage("Rip and Tear mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+        chatConnection.sendToChat("Rip and Tear mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
         drawBar.generateGif(0, True)
         shutil.copyfile("./Resources/barglow.png", "barglow.png")
 
@@ -301,7 +324,7 @@ class ripAndTear():
         COMMON.progress = 0
         drawBar.deleteBar()
         COMMON.returnToNormal()
-        chatConnection.sendMessage("Rip and Tear is now over, please stop saying %s in chat." % COMMON.spamMsg)
+        chatConnection.sendToChat("Rip and Tear is now over, please stop saying %s in chat." % COMMON.spamMsg)
 
     def trigger(self):
         if COMMON.isActive:
@@ -343,7 +366,7 @@ class inspire():
         COMMON.isActive = True
         COMMON.progress = 0
         showSource(settings["INSPIRE BAR SOURCE"])
-        chatConnection.sendMessage("Inspire mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+        chatConnection.sendToChat("Inspire mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
         drawBar.generateGif(0, True)
         shutil.copyfile("./Resources/barglow.png", "barglow.png")
 
@@ -355,7 +378,7 @@ class inspire():
         COMMON.progress = 0
         drawBar.deleteBar()
         COMMON.returnToNormal()
-        chatConnection.sendMessage("Inspire mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+        chatConnection.sendToChat("Inspire mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
 
     def trigger(self):
         if COMMON.isActive:
@@ -397,7 +420,7 @@ class cheer():
         COMMON.isActive = True
         COMMON.progress = 0
         showSource(settings["CHEER BAR SOURCE"])
-        chatConnection.sendMessage("Cheer mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+        chatConnection.sendToChat("Cheer mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
         drawBar.generateGif(0, True)
         shutil.copyfile("./Resources/barglow.png", "barglow.png")
 
@@ -409,7 +432,7 @@ class cheer():
         COMMON.progress = 0
         drawBar.deleteBar()
         COMMON.returnToNormal()
-        chatConnection.sendMessage("Cheer mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+        chatConnection.sendToChat("Cheer mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
 
     def trigger(self):
         if COMMON.isActive:
@@ -451,7 +474,7 @@ class legendary():
         COMMON.isActive = True
         COMMON.progress = 0
         showSource(settings["LEGENDARY BAR SOURCE"])
-        chatConnection.sendMessage("Legendary mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
+        chatConnection.sendToChat("Legendary mode is active! Spam %s in chat to fill the bar!" % COMMON.spamMsg)
         drawBar.generateGif(0, True)
         shutil.copyfile("./Resources/barglow.png", "barglow.png")
 
@@ -463,7 +486,7 @@ class legendary():
         COMMON.progress = 0
         drawBar.deleteBar()
         COMMON.returnToNormal()
-        chatConnection.sendMessage("Legendary mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
+        chatConnection.sendToChat("Legendary mode is now over, please stop saying %s in chat." % COMMON.spamMsg)
 
     def trigger(self):
         if COMMON.isActive:
