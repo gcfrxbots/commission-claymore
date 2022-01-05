@@ -61,6 +61,8 @@ defaultSettings = [
     ("", "", ""),
     ("HOTKEY TRIGGER PHRASE", "", "The message from another bot that will trigger the hotkey configured below"),
     ("HOTKEY TO SEND", "OBS_KEY_F17", "The message from another bot that will trigger the hotkey configured below. Keys are here: https://bit.ly/3dZVwGe"),
+    ("", "", ""),
+    ("BAR MAX SOURCE TO SHOW", "", "The source to show when the bar is filled"),
 ]
 
 

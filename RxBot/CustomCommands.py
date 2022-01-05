@@ -51,7 +51,7 @@ def showSource(sourceName):
     ws = obsws(host, port, password)
     ws.connect()
 
-    print(u"Showing source {}".format(sourceName))
+    #print(u"Showing source {}".format(sourceName))
     ws.call(requests.SetSceneItemRender(sourceName, True))
 
     ws.disconnect()
@@ -116,8 +116,6 @@ def activateFilter(filterName):
     ws.call(requests.SetSourceFilterVisibility("WG - ClaymoreEXPBar", str(filterName), True))
 
     ws.disconnect()
-
-
 
 
 def lazyround(x):
@@ -188,6 +186,7 @@ class bar:
         target = round(target/5)
         if target > 100:
             target = 100
+            showSource(settings["BAR MAX SOURCE TO SHOW"])
         activateFilter(target)
 
 

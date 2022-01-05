@@ -6,8 +6,6 @@ xlrd==1.2.0
 
 validators
 
-websocket
-
 websocket-client
 
 obs-websocket-py

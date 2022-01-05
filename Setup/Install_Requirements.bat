@@ -2,6 +2,7 @@ echo You need to have Python 3.7 (and the included PIP package) installed for th
 pause
 
 py -3.7 -m pip install -r requirements.txt --user --no-warn-script-location
+
 py -3.7 ../RxBot/Settings.py --g
 py -3.7 ../RxBot/Authenticate.py
 
