@@ -1,6 +1,7 @@
 from threading import Thread
 from Initialize import *
 initSetup()
+from Authenticate import *
 from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
@@ -88,6 +89,32 @@ def main():
 
         if "event" in resultDict.keys():  # Any actual event is under this
             eventKeys = resultDict["event"].keys()
+
+            if "reward" in eventKeys:
+                try:
+                    rewardTitle = resultDict["event"]["reward"]["title"]
+                    rewardPrompt = resultDict["event"]["reward"]["prompt"]
+                    rewardCost = resultDict["event"]["reward"]["cost"]
+                    user = resultDict["event"]["sender"]["displayname"]
+                    print("(" + misc.formatTime() + ")>> " + user + " redeemed reward title %s, prompt %s, for %s points." % (rewardTitle, rewardPrompt, rewardCost))
+                except:
+                    pass
+
+            if "subscriber" in eventKeys:
+                try:
+                    subUsername = resultDict["event"]["subscriber"]["username"]
+                    subMonths = resultDict["event"]["months"]
+                    subLevel = resultDict["event"]["sub_level"]
+                    print("(" + misc.formatTime() + ")>> " + subUsername + " subscribed with level %s for %s months." % (subLevel, subMonths))
+                except:
+                    pass
+
+            if "donations" in eventKeys:
+                    bitsAmount = round(resultDict["event"]["donations"][0]["amount"])
+                    user = resultDict["event"]["sender"]["displayname"]
+                    message = resultDict["event"]["message"]
+                    print("(" + misc.formatTime() + ")>> " + user + " cheered %s bits with the message %s" % (bitsAmount, message))
+                
             if "message" in eventKeys:  # Got chat message, display it then process commands
                 try:
                     message = resultDict["event"]["message"]
@@ -116,35 +143,22 @@ def main():
                 except:
                     pass
 
-            if "reward" in eventKeys:
-                try:
-                    rewardTitle = resultDict["event"]["reward"]["title"]
-                    rewardPrompt = resultDict["event"]["reward"]["prompt"]
-                    rewardCost = resultDict["event"]["reward"]["cost"]
-                    user = resultDict["event"]["sender"]["displayname"]
-                    print("(" + misc.formatTime() + ")>> " + user + " redeemed reward title %s, prompt %s, for %s points." % (rewardTitle, rewardPrompt, rewardCost))
-                except:
-                    pass
-
-            if "subscriber" in eventKeys:
-                try:
-                    subUsername = resultDict["event"]["subscriber"]["username"]
-                    subMonths = resultDict["event"]["months"]
-                    subLevel = resultDict["event"]["sub_level"]
-                    print("(" + misc.formatTime() + ")>> " + subUsername + " subscribed with level %s for %s months." % (subLevel, subMonths))
-                except:
-                    pass
-
-            if "donations" in eventKeys:
-                    bitsAmount = round(resultDict["event"]["donations"][0]["amount"])
-                    user = resultDict["event"]["sender"]["displayname"]
-                    message = resultDict["event"]["message"]
-                    print("(" + misc.formatTime() + ")>> " + user + " cheered %s bits with the message %s" % (bitsAmount, message))
-
         if "disclaimer" in resultDict.keys():  # Should just be keepalives?
             if resultDict["type"] == "KEEP_ALIVE":
                 response = {"type": "KEEP_ALIVE"}
                 chatConnection.sendRequest(response)
+
+        if "error" in resultDict.keys():
+            print("CHAT CONNECTION ERROR : " + resultDict["error"])
+            if resultDict['error'] == "USER_AUTH_INVALID":
+                print("Channel Auth Token Expired or Invalid - Reauthenticating...")
+                authChatConnection.main("main")
+            elif resultDict['error'] == "PUPPET_AUTH_INVALID":
+                print("Bot Account Auth Token Expired or Invalid -  Reauthenticating...")
+                authChatConnection.main("main")
+            else:
+                print("Please report this error to rxbots so we can get it resolved.")
+                print("Try running RXBOT_DEBUG.bat in the RxBot folder to get more info on this error to send to me.")
 
 
 def console():  # Thread to handle console input

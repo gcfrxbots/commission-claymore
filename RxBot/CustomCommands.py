@@ -6,7 +6,7 @@ import sys
 import ctypes
 import shutil
 import datetime
-from obswebsocket import obsws, requests
+from obswebsocket import obsws, requests, exceptions
 from PIL import Image, ImageDraw
 
 
@@ -509,7 +509,11 @@ class legendary():
         COMMON.activeEndTime = datetime.datetime.now() + datetime.timedelta(seconds=settings["ACTIVE DURATION"])
 
 drawBar = bar()
-COMMON = common()
+try:
+    COMMON = common()
+except exceptions.ConnectionFailure:
+    stopBot("OBS needs to be running for the bot to properly start!")
+
 RIPANDTEAR = ripAndTear()
 INSPIRE = inspire()
 CHEER = cheer()
