@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 
 
 commands_CustomCommands = {
+    "!testbits": ('testbits', 'cmdArguments', 'user'),
     "!ripandteartest": ('RIPANDTEAR.start', 'cmdArguments', 'user'),
     "!inspiretest": ('INSPIRE.start', 'cmdArguments', 'user'),
     "!cheertest": ('CHEER.start', 'cmdArguments', 'user'),
@@ -19,7 +20,8 @@ commands_CustomCommands = {
 
 
 def testbits(args, user):
-    exp(user, int(args))
+    if user == settings["CHANNEL"]:
+        exp(user, int(args))
 
 def showScene(sceneName):
     host = "localhost"
