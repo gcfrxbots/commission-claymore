@@ -2,7 +2,7 @@ from threading import Thread
 from Initialize import *
 initSetup()
 from Authenticate import *
-from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey, testbits
+from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey, testbits, exp
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
@@ -115,6 +115,7 @@ def main():
                     user = resultDict["event"]["sender"]["displayname"]
                     message = resultDict["event"]["message"]
                     print("(" + misc.formatTime() + ")>> " + user + " cheered %s bits with the message %s" % (bitsAmount, message))
+                    exp(user, int(bitsAmount))
                 
             if "message" in eventKeys:  # Got chat message, display it then process commands
                 try:
