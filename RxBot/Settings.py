@@ -23,8 +23,6 @@ debugMode = (vars(parser.parse_args())["debugMode"])
 '''FORMAT ---->   ("Option", "Default", "This is a description"), '''
 
 defaultSettings = [
-    ("PORT", 6667, "Try 80 if this doesn't work. Use 443 or 6697 for SSL. Don't touch otherwise."),
-    ("BOT OAUTH", "", "To get this oauth code, head here and log in with YOUR BOT'S account: https://twitchapps.com/tmi/"),
     ("BOT NAME", "", "Your bot's Twitch username, all lowercase."),
     ("CHANNEL", "", "Your Twitch username, all lowercase."),
     ("OBS WS PASSWORD", "test", "Your obs-websocket password, configured in OBS > Tools > Websockets Server Settings"),
@@ -63,6 +61,8 @@ defaultSettings = [
     ("HOTKEY TO SEND", "OBS_KEY_F17", "The message from another bot that will trigger the hotkey configured below. Keys are here: https://bit.ly/3dZVwGe"),
     ("", "", ""),
     ("BAR MAX SOURCE TO SHOW", "", "The source to show when the bar is filled"),
+    ("EXP MAX", "2200", "Makes the message below appear when the exp reaches this value."),
+    ("EXP MAX MSG", "Claymore levelled up!", "This message appears when your exp reaches the EXP MAX"),
 ]
 
 
@@ -179,12 +179,6 @@ class settingsConfig:
         settings = self.readSettings(wb)
 
         # Check Settings
-        if str(int(settings["PORT"])) not in ('80', '6667', '443', '6697'):  # Convert into non-float string
-            stopBot("Wrong Port! The port must be 80 or 6667 for standard connections, or 443 or 6697 for SSL")
-        if not settings['BOT OAUTH']:
-            stopBot("Missing BOT OAUTH - Please follow directions in the settings or readme.")
-        if not ('oauth:' in settings['BOT OAUTH']):
-            stopBot("Invalid BOT OAUTH - Your oauth should start with 'oauth:'")
         if not settings['BOT NAME'] or not settings['CHANNEL']:
             stopBot("Missing BOT NAME or CHANNEL")
 

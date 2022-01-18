@@ -18,6 +18,9 @@ commands_CustomCommands = {
 }
 
 
+def testbits(args, user):
+    exp(user, int(args))
+
 def showScene(sceneName):
     host = "localhost"
     port = 4444
@@ -122,6 +125,27 @@ def lazyround(x):
     if not x:
         return x
     return 10 * round(x/10)
+
+
+def exp(user, bitamt):
+    with open("exp.txt", "r+") as file:
+        fileContents = file.read()
+        oldExp = int(fileContents)
+        newExp = oldExp + int(bitamt)
+
+        if newExp >= settings["EXP MAX"]:  # This resets everything to normal and sends a message when you hit the max exp
+            newExp = bitamt - (settings["EXP MAX"] - oldExp)  # This rolls it over, so if you cheer 300 and it only takes 50 bits to reach max, you still get 250 points.
+            chatConnection.sendToChat(settings["EXP MAX MSG"])
+
+
+        chatConnection.sendToChat("%s cheered %s bits, Claymore's exp total is now %s" % (user, str(bitamt), str(newExp)))
+        file.seek(0)
+        file.truncate()
+        file.write(str(newExp))
+
+
+
+
 
 
 class bar:

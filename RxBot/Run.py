@@ -2,7 +2,7 @@ from threading import Thread
 from Initialize import *
 initSetup()
 from Authenticate import *
-from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey
+from CustomCommands import COMMON, RIPANDTEAR, INSPIRE, CHEER, LEGENDARY, commands_CustomCommands, drawBar, showSource, sendHotkey, testbits
 
 # https://github.com/obsproject/obs-websocket/releases/tag/4.9.1
 
@@ -26,6 +26,7 @@ class runMiscControls:
 
 
 def runcommand(command, cmdArguments, user, mute):
+    global settings
     commands = {**commands_CustomCommands}
     cmd = None
     arg1 = None
@@ -42,7 +43,7 @@ def runcommand(command, cmdArguments, user, mute):
                     chatConnection.sendToChat("You don't have permission to do this.")
                     return
             elif commands[item][0] == "STREAMER":  # STREAMER ONLY COMMANDS:
-                if (user == settings['CHANNEL']):
+                if user == settings['CHANNEL']:
                     cmd = commands[item][1]
                     arg1 = commands[item][2]
                     arg2 = commands[item][3]
@@ -140,7 +141,7 @@ def main():
 
                     if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
                         sendHotkey()
-                except:
+                except PermissionError:
                     pass
 
         if "disclaimer" in resultDict.keys():  # Should just be keepalives?
