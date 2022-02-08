@@ -92,14 +92,11 @@ def main():
             eventKeys = resultDict["event"].keys()
 
             if "reward" in eventKeys:
-                try:
-                    rewardTitle = resultDict["event"]["reward"]["title"]
-                    rewardPrompt = resultDict["event"]["reward"]["prompt"]
-                    rewardCost = resultDict["event"]["reward"]["cost"]
-                    user = resultDict["event"]["sender"]["displayname"]
-                    print("(" + misc.formatTime() + ")>> " + user + " redeemed reward title %s, prompt %s, for %s points." % (rewardTitle, rewardPrompt, rewardCost))
-                except:
-                    pass
+                rewardTitle = resultDict["event"]["reward"]["title"]
+                rewardPrompt = resultDict["event"]["reward"]["prompt"]
+                rewardCost = resultDict["event"]["reward"]["cost"]
+                user = resultDict["event"]["sender"]["displayname"]
+                print("(" + misc.formatTime() + ")>> " + user + " redeemed reward title %s, prompt %s, for %s points." % (rewardTitle, rewardPrompt, rewardCost))
 
             if "subscriber" in eventKeys:
                 try:
@@ -120,28 +117,29 @@ def main():
             if "message" in eventKeys:  # Got chat message, display it then process commands
                 try:
                     message = resultDict["event"]["message"]
-                    user = resultDict["event"]["sender"]["displayname"]
-                    command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
-                    cmdarguments = message.replace(command or "\r" or "\n", "")[1:]
-                    print("(" + misc.formatTime() + ")>> " + user + ": " + message)
+                    if message:
+                        user = resultDict["event"]["sender"]["displayname"]
+                        command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
+                        cmdarguments = message.replace(command or "\r" or "\n", "")[1:]
+                        print("(" + misc.formatTime() + ")>> " + user + ": " + message)
 
-                    if command[0] == "!":
-                        runcommand(command, cmdarguments, user, False)
-                    # Spam words
-                    if COMMON.spamMsg in command and COMMON.isActive:
-                        COMMON.trigger()
+                        if command[0] == "!":
+                            runcommand(command, cmdarguments, user, False)
+                        # Spam words
+                        if COMMON.spamMsg in command and COMMON.isActive:
+                            COMMON.trigger()
 
-                    if RIPANDTEAR.triggerMsg in message and RIPANDTEAR.triggerMsg.strip():
-                        RIPANDTEAR.start(None, user)
-                    if INSPIRE.triggerMsg in message and INSPIRE.triggerMsg.strip():
-                        INSPIRE.start(None, user)
-                    if CHEER.triggerMsg in message and CHEER.triggerMsg.strip():
-                        CHEER.start(None, user)
-                    if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
-                        LEGENDARY.start(None, user)
+                        if RIPANDTEAR.triggerMsg in message and RIPANDTEAR.triggerMsg.strip():
+                            RIPANDTEAR.start(None, user)
+                        if INSPIRE.triggerMsg in message and INSPIRE.triggerMsg.strip():
+                            INSPIRE.start(None, user)
+                        if CHEER.triggerMsg in message and CHEER.triggerMsg.strip():
+                            CHEER.start(None, user)
+                        if LEGENDARY.triggerMsg in message and LEGENDARY.triggerMsg.strip():
+                            LEGENDARY.start(None, user)
 
-                    if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
-                        sendHotkey()
+                        if COMMON.hotkeyTrigger in message and COMMON.hotkeyTrigger:
+                            sendHotkey()
                 except PermissionError:
                     pass
 
