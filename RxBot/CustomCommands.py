@@ -118,7 +118,7 @@ def activateFilter(filterName):
     ws = obsws(host, port, password)
     ws.connect()
 
-    ws.call(requests.SetSourceFilterVisibility("WG - ClaymoreEXPBar", str(filterName), True))
+    ws.call(requests.SetSourceFilterVisibility(settings["FILTER SCENE"], str(filterName), True))
 
     ws.disconnect()
 

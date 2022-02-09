@@ -63,6 +63,7 @@ defaultSettings = [
     ("BAR MAX SOURCE TO SHOW", "", "The source to show when the bar is filled"),
     ("EXP MAX", "2200", "Makes the message below appear when the exp reaches this value."),
     ("EXP MAX MSG", "Claymore levelled up!", "This message appears when your exp reaches the EXP MAX"),
+    ("FILTER SCENE", "WG - ClaymoreEXPBar", "The scene name with all the filters in it to make the bar work"),
 ]
 
 
