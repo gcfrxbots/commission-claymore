@@ -213,6 +213,7 @@ class bar:
         if target > 100:
             target = 100
             showSource(settings["BAR MAX SOURCE TO SHOW"])
+            activateFilter(settings["BAR MAX FILTER TO SHOW"])
         activateFilter(target)
 
 
