@@ -212,6 +212,8 @@ class bar:
     def barIsAtMax(self):
         if not self.barAtMax:
             self.barAtMax = True
+
+            # Add stuff here to happen when the bar is full!
             chatConnection.sendToChat("Bar is at max!")
             showSource(settings["BAR MAX SOURCE TO SHOW"])
             activateFilter(settings["BAR MAX FILTER TO SHOW"])
