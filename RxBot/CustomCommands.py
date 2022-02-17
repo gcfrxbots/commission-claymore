@@ -157,6 +157,7 @@ class bar:
         self.target = 0 # Out of 500, how full the bar should be
         self.imgname = "bar.gif"
         self.bardelay = settings["BAR ANIMATION DELAY"]
+        self.barAtMax = False
 
         self.barimage = Image.open("Resources/barimage.png")
         left = 0
@@ -208,12 +209,18 @@ class bar:
             except EOFError:
                 return (tot_duration / 1000) - 0.9  # returns total duration in s
 
+    def barIsAtMax(self):
+        if not self.barAtMax:
+            self.barAtMax = True
+            chatConnection.sendToChat("Bar is at max!")
+            showSource(settings["BAR MAX SOURCE TO SHOW"])
+            activateFilter(settings["BAR MAX FILTER TO SHOW"])
+
     def generateGif(self, target, force=False):
         target = round(target/5)
         if target > 100:
             target = 100
-            showSource(settings["BAR MAX SOURCE TO SHOW"])
-            activateFilter(settings["BAR MAX FILTER TO SHOW"])
+            self.barIsAtMax()
         activateFilter(target)
 
 
@@ -281,10 +288,12 @@ class common:
         hideSource(sourceNameList)
 
     def returnToNormal(self):
+        drawBar.barAtMax = False
         self.hideAllSources()
         self.isWinActive = False
 
     def win(self):
+        drawBar.barAtMax = False
         if self.currentlyActiveMode == "Rip and Tear":
             RIPANDTEAR.win()
         elif self.currentlyActiveMode == "Inspire":
